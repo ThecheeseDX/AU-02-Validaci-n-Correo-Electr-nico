@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validación de Correo Electrónico</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #34495e;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        button:disabled {
+            background-color: #95a5a6;
+            cursor: not-allowed;
+        }
+        .validation-message {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            display: none;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .loading {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        .retry-button {
+            background-color: #e74c3c;
+            width: auto;
+            margin-top: 5px;
+        }
+        .retry-button:hover {
+            background-color: #c0392b;
+        }
+        .success-message {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+        .success-icon {
+            font-size: 48px;
+            color: #2ecc71;
+            margin-bottom: 15px;
+        }
+        .email-display {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Formulario de Registro con Validación de Email -->
+        <div id="formulario-validacion">
+            <h1>Registro de Usuario</h1>
+            <p>Complete sus datos para registrarse</p>
+            
+            <div class="form-group">
+                <label for="nombre">Nombre Completo</label>
+                <input type="text" id="nombre" placeholder="Ingrese su nombre completo">
+            </div>
+            
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <input type="email" id="email" placeholder="cliente@dominio.com">
+                <div id="validacion-mensaje" class="validation-message"></div>
+            </div>
+            
+            <button id="btn-validar" type="button">Validar y Registrar</button>
+        </div>
+
+        <!-- Mensaje de éxito -->
+        <div id="mensaje-exito" class="success-message">
+            <div class="success-icon">✓</div>
+            <h2>¡Registro Exitoso!</h2>
+            <p>Se ha enviado un mensaje de confirmación a:</p>
+            <p class="email-display" id="email-confirmacion"></p>
+            <p>Por favor, revise su bandeja de entrada para completar la verificación.</p>
+            <button id="btn-continuar">Continuar</button>
+        </div>
+    </div>
+
+    <script>
+        // Elementos del DOM
+        const formularioValidacion = document.getElementById('formulario-validacion');
+        const mensajeExito = document.getElementById('mensaje-exito');
+        const emailInput = document.getElementById('email');
+        const validacionMensaje = document.getElementById('validacion-mensaje');
+        const btnValidar = document.getElementById('btn-validar');
+        const btnContinuar = document.getElementById('btn-continuar');
+        const emailConfirmacion = document.getElementById('email-confirmacion');
+
+        // Simulación de API de validación de correos
+        function validarEmailAPI(email) {
+            return new Promise((resolve, reject) => {
+                // Simulamos una llamada a API con timeout
+                setTimeout(() => {
+                    // Simulación: correos válidos e inválidos
+                    const dominiosValidos = ['gmail.com', 'hotmail.com', 'yahoo.com', 'dominio.com', 'outlook.com'];
+                    const dominio = email.split('@')[1];
+                    
+                    if (dominiosValidos.includes(dominio) && email !== 'correo@falso.xyz') {
+                        resolve({ valido: true, mensaje: 'Correo válido' });
+                    } else {
+                        reject({ valido: false, mensaje: 'Correo no válido, por favor revise' });
+                    }
+                }, 1500);
+            });
+        }
+
+        // Validar correo electrónico
+        btnValidar.addEventListener('click', async function() {
+            const email = emailInput.value.trim();
+            const nombre = document.getElementById('nombre').value.trim();
+            
+            if (!nombre) {
+                alert('Por favor, ingrese su nombre completo.');
+                return;
+            }
+            
+            if (!email) {
+                alert('Por favor, ingrese su correo electrónico.');
+                return;
+            }
+            
+            // Mostrar estado de validación
+            validacionMensaje.className = 'validation-message loading';
+            validacionMensaje.textContent = 'Validando correo electrónico...';
+            validacionMensaje.style.display = 'block';
+            
+            btnValidar.disabled = true;
+            btnValidar.textContent = 'Validando...';
+            
+            try {
+                // Simular llamada a API de validación
+                const resultado = await validarEmailAPI(email);
+                
+                // Éxito en la validación
+                validacionMensaje.className = 'validation-message success';
+                validacionMensaje.textContent = '✓ ' + resultado.mensaje;
+                
+                // Simular envío de datos al servidor
+                setTimeout(() => {
+                    // Mostrar mensaje de éxito
+                    formularioValidacion.style.display = 'none';
+                    mensajeExito.style.display = 'block';
+                    emailConfirmacion.textContent = email;
+                }, 1000);
+                
+            } catch (error) {
+                // Error en la validación
+                validacionMensaje.className = 'validation-message error';
+                validacionMensaje.textContent = '✗ ' + error.mensaje;
+                
+                // Agregar botón de reintentar
+                const retryButton = document.createElement('button');
+                retryButton.textContent = 'Reintentar';
+                retryButton.className = 'retry-button';
+                retryButton.addEventListener('click', function() {
+                    validacionMensaje.style.display = 'none';
+                    btnValidar.disabled = false;
+                    btnValidar.textContent = 'Validar y Registrar';
+                    emailInput.focus();
+                });
+                
+                // Limpiar contenido anterior y agregar botón
+                validacionMensaje.innerHTML = '✗ ' + error.mensaje;
+                validacionMensaje.appendChild(document.createElement('br'));
+                validacionMensaje.appendChild(retryButton);
+            } finally {
+                btnValidar.disabled = false;
+                btnValidar.textContent = 'Validar y Registrar';
+            }
+        });
+
+        // Continuar después del registro exitoso
+        btnContinuar.addEventListener('click', function() {
+            alert('Redirigiendo a la página principal...');
+            // En un caso real, aquí se redirigiría a otra página
+        });
+
+        // Validación en tiempo real para el correo falso de prueba
+        emailInput.addEventListener('blur', function() {
+            const email = this.value.trim();
+            if (email === 'correo@falso.xyz') {
+                validacionMensaje.className = 'validation-message error';
+                validacionMensaje.textContent = '✗ Este correo no es válido';
+                validacionMensaje.style.display = 'block';
+            } else if (email && email !== 'correo@falso.xyz') {
+                validacionMensaje.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
